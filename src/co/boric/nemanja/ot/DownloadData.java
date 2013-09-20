@@ -32,7 +32,7 @@ class DownloadData extends AsyncTask<String,Integer,String> {
 	protected void onPreExecute() {
 		super.onPreExecute();
         progDailog = new ProgressDialog(context);
-        progDailog.setMessage("UËitavanje...");
+        progDailog.setMessage("Uƒçitavanje...");
         progDailog.setIndeterminate(false);
         progDailog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         progDailog.setCancelable(true);

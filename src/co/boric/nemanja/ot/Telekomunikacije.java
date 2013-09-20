@@ -10,8 +10,9 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 import co.boric.nemanja.ot.R;
-import co.boric.nemanja.ot.Telekomunikacije.Predmet.Preuzimanje;
-import co.boric.nemanja.ot.Telekomunikacije.Predmet.Vest;
+
+import co.boric.nemanja.ot.Predmet;
+
 
 
 import android.net.Uri;
@@ -76,8 +77,8 @@ public class Telekomunikacije extends Activity {
     private void UcitajPreuzimanja() {
     	
 
-    	List<Preuzimanje> p = predmeti.get(prIndex).preuzimanja;
-    	Preuzimanje [] downloads = p.toArray(new Preuzimanje[p.size()]); ;
+    	List<Predmet.Preuzimanje> p = predmeti.get(prIndex).preuzimanja;
+    	Predmet.Preuzimanje [] downloads = p.toArray(new Predmet.Preuzimanje[p.size()]); ;
         
 		DownloadsAdapter adapter = new DownloadsAdapter(this, R.layout.novost, downloads);
 		ListView lstDownloads = (ListView)findViewById(R.id.lstDownloads);
@@ -119,8 +120,8 @@ public class Telekomunikacije extends Activity {
 	int prIndex = 0;
 	
 	private void UcitajObavestenja() {
-		List<Vest> v = predmeti.get(prIndex).vesti;
-        Predmet.Vest [] vesti = v.toArray(new Vest[v.size()]); ;
+		List<Predmet.Vest> v = predmeti.get(prIndex).vesti;
+        Predmet.Vest [] vesti = v.toArray(new Predmet.Vest[v.size()]); ;
         
         NovostiAdapter adapter = new NovostiAdapter(this, 
                 R.layout.novost, vesti);
@@ -203,7 +204,7 @@ public class Telekomunikacije extends Activity {
     	
     	mTabHost.setup(); // ovo mora, ako dinamicki dohvatamo tabhost kontrolu
         mTabHost.addTab(mTabHost.newTabSpec("tab_test1")
-          .setIndicator("Obaveötenja", getResources().getDrawable( R.drawable.news))
+          .setIndicator("Obave≈°tenja", getResources().getDrawable( R.drawable.news))
           .setContent(R.id.tab1));
         mTabHost.addTab(mTabHost.newTabSpec("tab_test2")
           .setIndicator("Preuzimanja", getResources().getDrawable( R.drawable.downloads))
@@ -268,8 +269,8 @@ public class Telekomunikacije extends Activity {
 		if(result == "")
 		{
 			AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-			alertDialog.setTitle("Greöka");
-			alertDialog.setMessage("Problem pri povezivanju sa internetom.\nProverite internet konekciju i pokuöajte ponovo.");
+			alertDialog.setTitle("Gre≈°ka");
+			alertDialog.setMessage("Problem pri povezivanju sa internetom.\nProverite internet konekciju i poku≈°ajte ponovo.");
 			alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener() {
 			   public void onClick(DialogInterface dialog, int which) {
 			      Telekomunikacije.this.finish();
@@ -280,7 +281,8 @@ public class Telekomunikacije extends Activity {
 		}
 		
 		try {
-			predmeti = parse(new ByteArrayInputStream(result.getBytes("UTF-8")));
+            PredmetXMLParser parser = new PredmetXMLParser();
+			predmeti = parser.parse(new ByteArrayInputStream(result.getBytes("UTF-8")));
 		} catch (XmlPullParserException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -292,304 +294,10 @@ public class Telekomunikacije extends Activity {
         toolbarButtons.get(0).performClick();
 		
 	}
-	
-	
-	public static class Predmet {    
-	    public static class Vest{
-	    	public final String naslov;
-	    	public final String desc;
-	    	public final String data;
-	    	public Vest(String naslov, String desc, String data)
-	    	{
-	    		this.naslov = naslov;
-	    		this.desc = desc;
-	    		this.data = data;
-	    	}
-	    }
-	    
-	    public static class Preuzimanje
-	    {
-	    	
-	    	public final String naslov;
-	    	public final String desc;
-	    	public final String url;
-	    	public final String filename;
-	    	public Preuzimanje(String naslov, String desc, String url, String filename)
-	    	{
-	    		this.naslov = naslov;
-	    		this.desc = desc;
-	    		this.url = url;
-	    		this.filename = filename;
-	    	}
-	    }
-	    
-	    public final String name;
-	    public final String code;
-	    public final String kontakt;
-	    public final List<Vest> vesti;
-	    public final List<Preuzimanje> preuzimanja;
-	    
-	    
-	    public Predmet(String name, String code, String kontakt, List<Vest> vesti, List<Preuzimanje> preuzimanja)
-	    {
-	    	this.name = name;
-	    	this.code = code;
-	    	this.kontakt = kontakt;
-	    	this.vesti = vesti;
-	    	this.preuzimanja = preuzimanja;
-	    }
-	   
-	}
+
+
+
     private static final String ns = null;
-    
-    public List<Predmet> parse(InputStream in) throws XmlPullParserException, IOException {
-        try {
-            XmlPullParser parser = Xml.newPullParser();
-            parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
-            parser.setInput(in, null);
-            parser.nextTag();
-            return readFeed(parser);
-        } finally {
-            in.close();
-        }
-    }
-
-    private List<Predmet> readFeed(XmlPullParser parser) throws XmlPullParserException, IOException {
-        List<Predmet> predmeti = new ArrayList<Predmet>();
-
-        parser.require(XmlPullParser.START_TAG, ns, "predmeti");
-        while (parser.next() != XmlPullParser.END_TAG) {
-            if (parser.getEventType() != XmlPullParser.START_TAG) {
-                continue;
-            }
-            String name = parser.getName();
-            // Starts by looking for the entry tag
-            if (name.equals("predmet")) {
-                predmeti.add(readPredmet(parser));
-            } else {
-                skip(parser);
-            }
-        }  
-        return predmeti;
-    }
-
-    
-	private Predmet readPredmet(XmlPullParser parser) throws XmlPullParserException, IOException {
-	    parser.require(XmlPullParser.START_TAG, ns, "predmet");
-	    String ime = null;
-	    String code = null;
-	    String kontakt = null;
-	    List<Predmet.Vest> vesti = null;
-	    List<Predmet.Preuzimanje> preuz = null;
-	    while (parser.next() != XmlPullParser.END_TAG) {
-	        if (parser.getEventType() != XmlPullParser.START_TAG) {
-	            continue;
-	        }
-	        String name = parser.getName();
-	        if (name.equals("name")) {
-	            ime = readName(parser);
-	        } else if (name.equals("code")) {
-	            code = readCode(parser);
-	        } else if (name.equals("kontakt")) {
-	            kontakt = readKontakt(parser);
-	        } else if (name.equals("vesti")){
-	        	vesti = readVesti(parser);
-	        } else if (name.equals("preuzimanja")){
-	        	preuz = readPreuzimanja(parser);
-	        } else {
-	            skip(parser);
-	        }
-	    }
-	    return new Predmet(ime, code, kontakt, vesti, preuz);
-	}
-
-
-	private List<Predmet.Vest> readVesti(XmlPullParser parser) throws XmlPullParserException, IOException {
-	    List<Predmet.Vest> vesti = new ArrayList<Predmet.Vest>();
-	
-	    parser.require(XmlPullParser.START_TAG, ns, "vesti");
-	    while (parser.next() != XmlPullParser.END_TAG) {
-	        if (parser.getEventType() != XmlPullParser.START_TAG) {
-	            continue;
-	        }
-	        String name = parser.getName();
-	        // Starts by looking for the entry tag
-	        if (name.equals("vest")) {
-	        	vesti.add(readVest(parser));
-	        } else {
-	            skip(parser);
-	        }
-	    }  
-	    return vesti;
-	}
-
-	private Vest readVest(XmlPullParser parser) throws XmlPullParserException, IOException {
-		parser.require(XmlPullParser.START_TAG, ns, "vest");
-	    String naslov = null;
-	    String desc = null;
-	    String data = null;
-	    while (parser.next() != XmlPullParser.END_TAG) {
-	        if (parser.getEventType() != XmlPullParser.START_TAG) {
-	            continue;
-	        }
-	        String name = parser.getName();
-	        if (name.equals("naslov")) {
-	            naslov = readVestiNaslov(parser);
-	        } else if (name.equals("desc")) {
-	            desc = readVestiDesc(parser);
-	        } else if (name.equals("data")) {
-	            data = readVestiData(parser);
-	        } else {
-	            skip(parser);
-	        }
-	    }
-	    return new Predmet.Vest(naslov, desc, data);
-	}
-
-	private String readVestiData(XmlPullParser parser) throws XmlPullParserException, IOException {
-		parser.require(XmlPullParser.START_TAG, ns, "data");
-	    String temp = readText(parser);
-	    parser.require(XmlPullParser.END_TAG, ns, "data");
-	    return temp;
-	}
-
-	private String readVestiDesc(XmlPullParser parser) throws XmlPullParserException, IOException {
-		parser.require(XmlPullParser.START_TAG, ns, "desc");
-	    String temp = readText(parser);
-	    parser.require(XmlPullParser.END_TAG, ns, "desc");
-	    return temp;
-	}
-
-	private String readVestiNaslov(XmlPullParser parser) throws XmlPullParserException, IOException {
-		parser.require(XmlPullParser.START_TAG, ns, "naslov");
-	    String temp = readText(parser);
-	    parser.require(XmlPullParser.END_TAG, ns, "naslov");
-	    return temp;
-	}
-
-	// Processes title tags in the feed.
-	private String readName(XmlPullParser parser) throws IOException, XmlPullParserException {
-	    parser.require(XmlPullParser.START_TAG, ns, "name");
-	    String title = readText(parser);
-	    parser.require(XmlPullParser.END_TAG, ns, "name");
-	    return title;
-	}
-	
-	private String readCode(XmlPullParser parser) throws IOException, XmlPullParserException {
-	    parser.require(XmlPullParser.START_TAG, ns, "code");
-	    String title = readText(parser);
-	    parser.require(XmlPullParser.END_TAG, ns, "code");
-	    return title;
-	}
-	
-	private String readKontakt(XmlPullParser parser) throws IOException, XmlPullParserException {
-	    parser.require(XmlPullParser.START_TAG, ns, "kontakt");
-	    String title = readText(parser);
-	    parser.require(XmlPullParser.END_TAG, ns, "kontakt");
-	    return title;
-	}
-	
-
-	// For the tags title and summary, extracts their text values.
-	private String readText(XmlPullParser parser) throws IOException, XmlPullParserException {
-	    String result = "";
-	    if (parser.next() == XmlPullParser.TEXT) {
-	        result = parser.getText();
-	        parser.nextTag();
-	    }
-	    return result;
-	}
-	
-	private List<Predmet.Preuzimanje> readPreuzimanja(XmlPullParser parser) throws XmlPullParserException, IOException {
-	    List<Predmet.Preuzimanje> Preuzimanja = new ArrayList<Predmet.Preuzimanje>();
-	
-	    parser.require(XmlPullParser.START_TAG, ns, "preuzimanja");
-	    while (parser.next() != XmlPullParser.END_TAG) {
-	        if (parser.getEventType() != XmlPullParser.START_TAG) {
-	            continue;
-	        }
-	        String name = parser.getName();
-	        // Starts by looking for the entry tag
-	        if (name.equals("preuzimanje")) {
-	        	Preuzimanja.add(readPreuzimanje(parser));
-	        } else {
-	            skip(parser);
-	        }
-	    }  
-	    return Preuzimanja;
-	}
-
-	private Predmet.Preuzimanje readPreuzimanje(XmlPullParser parser) throws XmlPullParserException, IOException {
-		parser.require(XmlPullParser.START_TAG, ns, "preuzimanje");
-	    String naslov = null;
-	    String desc = null;
-	    String url = null;
-		String filename = null;
-	    while (parser.next() != XmlPullParser.END_TAG) {
-	        if (parser.getEventType() != XmlPullParser.START_TAG) {
-	            continue;
-	        }
-	        String name = parser.getName();
-	        if (name.equals("naslov")) {
-	            naslov = readPreuzimanjaNaslov(parser);
-	        } else if (name.equals("desc")) {
-	            desc = readPreuzimanjaDesc(parser);
-	        } else if (name.equals("url")) {
-	            url = readPreuzimanjaUrl(parser);
-			} else if (name.equals("filename")) {
-	            filename = readPreuzimanjaFilename(parser);
-	        } else {
-	            skip(parser);
-	        }
-	    }
-	    return new Predmet.Preuzimanje(naslov, desc, url, filename);
-	}
-
-	private String readPreuzimanjaUrl(XmlPullParser parser) throws XmlPullParserException, IOException {
-		parser.require(XmlPullParser.START_TAG, ns, "url");
-	    String temp = readText(parser);
-	    parser.require(XmlPullParser.END_TAG, ns, "url");
-	    return temp;
-	}
-	
-	private String readPreuzimanjaFilename(XmlPullParser parser) throws XmlPullParserException, IOException {
-		parser.require(XmlPullParser.START_TAG, ns, "filename");
-	    String temp = readText(parser);
-	    parser.require(XmlPullParser.END_TAG, ns, "filename");
-	    return temp;
-	}
-
-	private String readPreuzimanjaDesc(XmlPullParser parser) throws XmlPullParserException, IOException {
-		parser.require(XmlPullParser.START_TAG, ns, "desc");
-	    String temp = readText(parser);
-	    parser.require(XmlPullParser.END_TAG, ns, "desc");
-	    return temp;
-	}
-
-	private String readPreuzimanjaNaslov(XmlPullParser parser) throws XmlPullParserException, IOException {
-		parser.require(XmlPullParser.START_TAG, ns, "naslov");
-	    String temp = readText(parser);
-	    parser.require(XmlPullParser.END_TAG, ns, "naslov");
-	    return temp;
-	}
-	
-	
-	private void skip(XmlPullParser parser) throws XmlPullParserException, IOException {
-	    if (parser.getEventType() != XmlPullParser.START_TAG) {
-	        throw new IllegalStateException();
-	    }
-	    int depth = 1;
-	    while (depth != 0) {
-	        switch (parser.next()) {
-	        case XmlPullParser.END_TAG:
-	            depth--;
-	            break;
-	        case XmlPullParser.START_TAG:
-	            depth++;
-	            break;
-	        }
-	    }
-	 }
 
 
 

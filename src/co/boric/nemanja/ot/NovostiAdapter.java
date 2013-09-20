@@ -1,6 +1,6 @@
 package co.boric.nemanja.ot;
 
-import co.boric.nemanja.ot.Telekomunikacije.Predmet;
+import co.boric.nemanja.ot.Predmet;
 import co.boric.nemanja.ot.R;
 import android.app.Activity;
 import android.content.Context;
