@@ -1,21 +1,15 @@
-package co.boric.nemanja.ot;
+package co.boric.nemanja.ot.telekomunikacije;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import android.content.*;
 import android.webkit.MimeTypeMap;
-import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
-import co.boric.nemanja.ot.R;
-
-import co.boric.nemanja.ot.Predmet;
-
+import co.boric.nemanja.ot.telekomunikacije.R;
 
 
 import android.net.Uri;
@@ -30,12 +24,6 @@ import android.app.DownloadManager;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
-import android.text.Html;
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.util.Linkify;
-import android.util.Xml;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;

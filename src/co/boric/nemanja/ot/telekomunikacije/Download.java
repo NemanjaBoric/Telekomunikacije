@@ -1,4 +1,4 @@
-package co.boric.nemanja.ot;
+package co.boric.nemanja.ot.telekomunikacije;
 
 public final class Download {
 	String url;

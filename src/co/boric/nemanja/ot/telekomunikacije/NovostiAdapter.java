@@ -1,7 +1,6 @@
-package co.boric.nemanja.ot;
+package co.boric.nemanja.ot.telekomunikacije;
 
-import co.boric.nemanja.ot.Predmet;
-import co.boric.nemanja.ot.R;
+import co.boric.nemanja.ot.telekomunikacije.R;
 import android.app.Activity;
 import android.content.Context;
 import android.view.*;
@@ -9,30 +8,30 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 
-public class DownloadsAdapter extends ArrayAdapter<Predmet.Preuzimanje> {
+public class NovostiAdapter extends ArrayAdapter<Predmet.Vest> {
 	Context context;
 	int layoutResourceId;
-	Predmet.Preuzimanje downloads[] = null;
+	Predmet.Vest novosti[] = null;
 	
-	public DownloadsAdapter(Context context, int layoutResourceId, Predmet.Preuzimanje [] downloads)
+	public NovostiAdapter(Context context, int layoutResourceId, Predmet.Vest [] novosti)
 	{
-		super(context, layoutResourceId, downloads);
+		super(context, layoutResourceId, novosti);
 		this.layoutResourceId = layoutResourceId;
 		this.context = context;
-		this.downloads = downloads;
+		this.novosti = novosti;
 	}
 	
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent){
 		View row = convertView;
-		DownloadHolder holder = null;
+		NovostiHolder holder = null;
 		
 		if(row == null)
 		{
 			LayoutInflater inflater = ((Activity)context).getLayoutInflater();
 			row = inflater.inflate(layoutResourceId, parent, false);
 			
-			holder = new DownloadHolder();
+			holder = new NovostiHolder();
 			holder.naslov = (TextView)row.findViewById(R.id.naslov); 
 			holder.text = (TextView)row.findViewById(R.id.text); 
 			
@@ -40,25 +39,23 @@ public class DownloadsAdapter extends ArrayAdapter<Predmet.Preuzimanje> {
 		}
 		else
 		{
-			holder = (DownloadHolder)row.getTag();
+			holder = (NovostiHolder)row.getTag();
 		}
 		
-		Predmet.Preuzimanje down  = downloads[position];
-		holder.naslov.setText(down.naslov);
-		holder.text.setText(down.desc);
-		holder.url = down.url;
-		holder.filename = down.filename;
+		Predmet.Vest novost  = novosti[position];
+		holder.naslov.setText(novost.naslov);
+		holder.text.setText(novost.desc);
+		holder.data = novost.data;
 		
 		
 		return row;
 	}
 	
-	public static class DownloadHolder
+	public static class NovostiHolder
 	{
 		TextView naslov;
 		TextView text;
-		String filename;
-		String url;
+		String data;
 	}
 	
 }

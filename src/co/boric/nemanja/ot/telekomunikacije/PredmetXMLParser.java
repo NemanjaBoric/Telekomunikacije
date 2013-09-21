@@ -1,4 +1,4 @@
-package co.boric.nemanja.ot;
+package co.boric.nemanja.ot.telekomunikacije;
 
 import android.util.Xml;
 import org.xmlpull.v1.XmlPullParser;
