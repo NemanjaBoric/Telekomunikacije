@@ -1,11 +1,14 @@
 package co.boric.nemanja.ot;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.content.*;
+import android.webkit.MimeTypeMap;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -24,9 +27,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 
 import android.app.DownloadManager;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Color;
@@ -48,7 +48,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TabHost;
-
+import android.content.Intent;
 
 
 public class Telekomunikacije extends Activity {
@@ -60,8 +60,14 @@ public class Telekomunikacije extends Activity {
         super.onCreate(savedInstanceState);
         setTitle("Telekomunikacije");
         setContentView(R.layout.activity_naslovna);
-        
-        
+
+        manager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+
+        // Initialize download manager
+        IntentFilter completeFilter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
+        registerReceiver(onDownloadComplete, completeFilter);
+
+
         //todo prikazi listu za pretplatu!
         DodajTabove();
         new DownloadData(this, this).execute("http://telekomunikacije.etf.rs/zaposleni/data.xml");
@@ -154,7 +160,11 @@ public class Telekomunikacije extends Activity {
 	        return false;
 	    }
 	}
-	
+
+    boolean downloadRunning = false;
+    long downloadId = 0;
+    DownloadManager manager;
+
 	@TargetApi(11)
 	private void DownloadFile(String url, String filename, String title, String desc)
 	{
@@ -165,17 +175,92 @@ public class Telekomunikacije extends Activity {
 			// in order for this if to run, you must use the android 3.2 to compile your app
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 			    request.allowScanningByMediaScanner();
+                String mime = getMimeFromExtension(url);
+               // request.setMimeType(mime);
 			    request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
 			}
 			request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, filename);
 	
 			// get download service and enqueue file
-			DownloadManager manager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
-			manager.enqueue(request);
+            downloadRunning = true;
+			downloadId = manager.enqueue(request);
 		}
 	}
-	
 
+    BroadcastReceiver onDownloadComplete=new BroadcastReceiver() {
+        @Override
+        public void onReceive(final Context context, Intent intent) {
+            AlertDialog.Builder alert = new AlertDialog.Builder(context);
+
+            alert.setTitle("Preuzimanje završeno");
+            alert.setMessage("Želite li da otvorite datoteku?");
+
+            alert.setPositiveButton("Da", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    openFile(context, manager.getUriForDownloadedFile(downloadId));
+                }
+            });
+
+            alert.setNegativeButton("Ne", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    // Canceled.
+                }
+            });
+
+
+            alert.show();
+        }
+    };
+
+
+    // Gets MIME type from extension
+    protected String getMimeFromExtension(String url)
+    {
+        String extension = url.substring(url.lastIndexOf("."));
+        String mimeTypeMap = MimeTypeMap.getFileExtensionFromUrl(extension);
+        String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(mimeTypeMap);
+        return mimeType;
+    }
+
+    // Opens file after download
+    protected void openFile(Context context, Uri fileName) {
+        Intent open = new Intent(Intent.ACTION_VIEW);
+        open.setDataAndType(fileName,
+                getMimeFromExtension(fileName.getPath()));
+        try {
+            startActivity(open);
+        }
+        catch(ActivityNotFoundException ex)
+        {
+            TipDatotekeNijePodrzan(context);
+
+        }
+    }
+
+    void TipDatotekeNijePodrzan(Context context)
+    {
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+                context);
+
+
+        alertDialogBuilder.setTitle("Greška pri otvaranju");
+
+        // set dialog message
+        alertDialogBuilder
+                .setMessage("Ne postoji instaliran program za otvaranje date datoteke")
+                .setCancelable(false)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog,int id) {
+
+                    }
+                });
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
+    }
 	
 	OnItemClickListener newsListener = new OnItemClickListener (){
 		  public void onItemClick(AdapterView<?> parent, View view, int position, long id){
